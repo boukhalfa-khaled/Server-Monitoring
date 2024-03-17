@@ -1,9 +1,19 @@
 <!--  
 title : monitoring system using php 
 date : 10/3/2024	
+author: Boukhalfa Khaled Islam
 -->
 
 <?php
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+
+require 'vendor/autoload.php';
+
+
 	$operating_system = PHP_OS_FAMILY;
 
 	if ($operating_system === 'Linux') {
@@ -43,7 +53,44 @@ date : 10/3/2024
 	$diskusage = round($diskused/$disktotal*100);
 
 	 if ($memusage > 85 || $cpuload > 85 || $diskusage > 85) {
-		echo "Send Email";
+		$mail = new PHPMailer(true);
+
+			try {
+				//Server settings
+				$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+				$mail->isSMTP();                                            //Send using SMTP
+				$mail->Host       = 'smtp.example.com';                     //Set the SMTP server to send through
+				$mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+				$mail->Username   = 'user@example.com';                     //SMTP username
+				$mail->Password   = 'secret';                               //SMTP password
+				$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+				$mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+				
+				//Attachments
+				// $mail->addAttachment('/var/tmp/file.tar.gz');
+				// $mail->addAttachment('/tmp/image.jpg', 'new.jpg');
+		
+				//Recipients
+				$mail->setFrom('from@example.com', 'Mailer');
+				$mail->addAddress('joe@example.net', 'Joe User');     //Add a recipient
+				$mail->addAddress('ellen@example.com');               //Name is optional
+				$mail->addReplyTo('info@example.com', 'Information');
+				$mail->addCC('cc@example.com');
+				$mail->addBCC('bcc@example.com');
+		
+
+					$bodyMail= "You may have a RAM or CPU problem  <br/> CPU : {$cpuload}% <br/> RAM :{$memusage}%";
+					//Content
+					$mail->isHTML(false);
+					$mail->Subject = 'server Alert';
+					$mail->Body    = $bodyMail;
+					$mail->AltBody = 'From Monitoring script message alert about ram and cpu';
+
+					$mail->send();
+			} catch (Exception $e) {
+					echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+			}
+
 	 }
 
 
